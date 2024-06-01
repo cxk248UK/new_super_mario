@@ -16,3 +16,9 @@ for menu in MENU_BUTTONS:
 
 # 降采样后观察空间形状
 OBSERVATION_SHAP = (84, 84)
+
+# 保存文件路径（开发和测试环境不同）
+# COLAB 保存地址
+SAVE_DIR = '../drive/MyDrive/Colab Notebooks/checkpoints'
+# 本地保存地址
+# SAVE_DIR = 'checkpoints'

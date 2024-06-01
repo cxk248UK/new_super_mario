@@ -6,12 +6,13 @@ import torch
 from agent import GameAgent
 from environment import game_env
 from learn_log import MetricLogger
+from custom_common_dict import SAVE_DIR
 
 use_cuda = torch.cuda.is_available()
 print(f"Using CUDA: {use_cuda}")
 print()
 
-save_dir = Path("checkpoints") / datetime.datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
+save_dir = Path(SAVE_DIR) / datetime.datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
 save_dir.mkdir(parents=True)
 models = list(save_dir.parent.glob('**/model'))
 last_model_path = None
@@ -28,8 +29,6 @@ logger = MetricLogger(save_dir)
 episodes = 100
 for e in range(episodes):
 
-    print('get into loop')
-
     state = game_env.reset()[0]
 
     # Play the game!
@@ -41,7 +40,7 @@ for e in range(episodes):
         # Agent performs action
         observation, reward, terminated, truncated, info = game_env.step(action)
 
-        game_env.render()
+        # game_env.render()
 
         # Remember
         mario.cache(state, observation, action, reward, int(terminated or truncated))
@@ -59,8 +58,6 @@ for e in range(episodes):
         if terminated or truncated:
             break
         step += 1
-        if reward > 0:
-            print(reward)
 
     logger.log_episode()
 

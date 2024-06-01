@@ -19,7 +19,6 @@ class GameAgent:
 
         if last_model_path:
             self.net = torch.load(last_model_path)
-            print('success load last model')
         else:
             self.net = MiniCnnModel(input_dim=self.state_dim, output_dim=self.action_dim).float()
 
