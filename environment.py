@@ -66,7 +66,7 @@ class SkipFrame(gym.Wrapper):
         return observation, reward, terminated, truncated, info
 
 
-game_env = retro.make(game="SuperMarioBros3-Nes", render_mode='None')
+game_env = retro.make(game="SuperMarioBros-Nes", render_mode='None')
 
 game_env = SonicDiscretizer(game_env)
 

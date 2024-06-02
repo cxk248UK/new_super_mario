@@ -12,7 +12,7 @@ use_cuda = torch.cuda.is_available()
 print(f"Using CUDA: {use_cuda}")
 print()
 
-save_dir = Path(SAVE_DIR) / f'{datetime.datetime.now().strftime("%Y-%m-%dT%H-%M-%S")}_{game_env.gamename}'
+save_dir = Path(SAVE_DIR) / f'{datetime.datetime.now().strftime("%Y-%m-%dT%H-%M-%S")}_{game_env.unwrapped.gamename}'
 save_dir.mkdir(parents=True)
 models = list(save_dir.parent.glob('**/model'))
 last_log = list(save_dir.parent.glob('*SuperMarioBros3-Nes/log'))
