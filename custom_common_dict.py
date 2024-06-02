@@ -19,6 +19,6 @@ OBSERVATION_SHAP = (84, 84)
 
 # 保存文件路径（开发和测试环境不同）
 # COLAB 保存地址
-SAVE_DIR = '../drive/MyDrive/Colab Notebooks/checkpoints'
+# SAVE_DIR = '../drive/MyDrive/Colab Notebooks/checkpoints'
 # 本地保存地址
-# SAVE_DIR = 'checkpoints'
+SAVE_DIR = 'checkpoints'

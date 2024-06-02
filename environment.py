@@ -65,6 +65,7 @@ class SkipFrame(gym.Wrapper):
                 break
         return observation, reward, terminated, truncated, info
 
+# game_env = retro.make(game="SuperMarioBros-Nes", render_mode='human')
 
 game_env = retro.make(game="SuperMarioBros-Nes", render_mode='None')
 
