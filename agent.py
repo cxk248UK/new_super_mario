@@ -8,7 +8,7 @@ from custom_common_dict import USE_CUDA
 
 
 def chose_action_from_network_output(network_output):
-    return torch.argmax(network_output, dim=1).item()
+    return torch.argmax(network_output, dim=1)
 
 
 class GameAgent:
@@ -62,7 +62,7 @@ class GameAgent:
                 state = torch.tensor(state)
             state = state.unsqueeze(0)
             action_value = self.net(state, model='online')
-            action_idx = chose_action_from_network_output(action_value)
+            action_idx = chose_action_from_network_output(action_value).item()
             return action_idx
 
         if np.random.rand() < self.exploration_rate:
@@ -77,7 +77,7 @@ class GameAgent:
                 state = torch.tensor(state)
             state = state.unsqueeze(0)
             action_value = self.net(state, model='online')
-            action_idx = chose_action_from_network_output(action_value)
+            action_idx = chose_action_from_network_output(action_value).item()
 
         self.exploration_rate *= self.exploration_rate_decay
         self.exploration_rate = max(self.exploration_rate, self.exploration_rate_min)
