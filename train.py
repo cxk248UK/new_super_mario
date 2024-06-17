@@ -4,50 +4,26 @@ from pathlib import Path
 import torch
 
 from agent import GameAgent
-from environment import game_env
+from environment import init_environment
 from learn_log import MetricLogger
-from custom_common_dict import SAVE_DIR
+from custom_common_dict import SAVE_DIR, FRAME_WIDTH, FRAME_HIGH, FRAME_SKIP, USE_CUDA
 
-use_cuda = torch.cuda.is_available()
-print(f"Using CUDA: {use_cuda}")
+print(f"Using CUDA: {USE_CUDA}")
 print()
 
+game_env = init_environment()
 save_dir = Path(SAVE_DIR) / f'{datetime.datetime.now().strftime("%Y-%m-%dT%H-%M-%S")}_{game_env.unwrapped.gamename}'
 save_dir.mkdir(parents=True)
-models = list(save_dir.parent.glob(f'*{game_env.unwrapped.gamename}/model'))
-last_log = list(save_dir.parent.glob(f'*{game_env.unwrapped.gamename}/log'))
-last_model_path = None
-last_e = None
-last_exploration_rate = 1.0
 
-if len(models) > 0:
-    models.sort(key=lambda model_path: str(model_path))
-    last_model_path = models.pop()
 
-if len(last_log) > 0:
-    last_log.sort(key=lambda model_path: str(model_path))
-    try:
-        last_line = open(last_log.pop()).readlines().pop().split()
-        last_e = int(last_line[0])
-        last_exploration_rate = float(last_line[2])
-    except IOError or TypeError or ValueError:
-        print('try to get last episodes but fail')
-
-mario = GameAgent(state_dim=(4, 84, 84), action_dim=game_env.action_space.n, save_dir=save_dir,
-                  last_model_path=last_model_path, exploration_rate=last_exploration_rate)
+mario = GameAgent(state_dim=(FRAME_SKIP, FRAME_WIDTH, FRAME_HIGH), action_dim=game_env.action_space.n, save_dir=save_dir)
 
 logger = MetricLogger(save_dir)
 
 episodes = 500000
 
-if last_e and last_model_path:
-    start_e = last_e
-    print(f'Start from last episodes: {start_e}')
-    print(f'exploration_rate: {last_exploration_rate}')
-else:
-    start_e = 0
-    print('can not find last episodes. start from 0')
-for e in range(start_e, episodes):
+
+for e in range(0, episodes):
 
     state = game_env.reset()[0]
 
@@ -59,7 +35,7 @@ for e in range(start_e, episodes):
         # Agent performs action
         observation, reward, terminated, truncated, info = game_env.step(action)
 
-        # game_env.render()
+        game_env.render()
 
         # Remember
         mario.cache(state, observation, action, reward, int(terminated or truncated))
@@ -81,4 +57,3 @@ for e in range(start_e, episodes):
 
     if (e % 10 == 0) or (e == episodes - 1):
         logger.record(episode=e, epsilon=mario.exploration_rate, step=mario.curr_step)
-        torch.save(mario.net, save_dir / 'model')

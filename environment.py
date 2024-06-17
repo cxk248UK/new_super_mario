@@ -3,7 +3,7 @@ import numpy as np
 import retro
 from gymnasium.wrappers import FrameStack, GrayScaleObservation, ResizeObservation
 
-from custom_common_dict import ALLOW_ACTION_COMBOS, OBSERVATION_SHAP
+from custom_common_dict import ALLOW_ACTION_COMBOS, OBSERVATION_SHAP, GAME_NAME, TRAIN_RENDER, PLAY_RENDER
 
 
 # 动作包装
@@ -65,20 +65,25 @@ class SkipFrame(gym.Wrapper):
                 break
         return observation, reward, terminated, truncated, info
 
-# game_env = retro.make(game="SuperMarioBros-Nes", render_mode='human')
 
-game_env = retro.make(game="SuperMarioBros-Nes", render_mode='None')
+def init_environment(render=False):
+    if render:
+        game_env = retro.make(game=GAME_NAME, render_mode=PLAY_RENDER)
+    else:
+        game_env = retro.make(game=GAME_NAME, render_mode=TRAIN_RENDER)
 
-game_env = SonicDiscretizer(game_env)
+    game_env = SonicDiscretizer(game_env)
 
-# 每四帧合并为一个帧
-game_env = SkipFrame(game_env, 4)
+    # 每四帧合并为一个帧
+    game_env = SkipFrame(game_env, 4)
 
-# RGB转换为灰度并减少一个颜色维度
-game_env = GrayScaleObservation(game_env, keep_dim=False)
+    # RGB转换为灰度并减少一个颜色维度
+    game_env = GrayScaleObservation(game_env, keep_dim=False)
 
-# 间原观察空间降采样为正方形
-game_env = ResizeObservation(game_env, OBSERVATION_SHAP)
+    # 间原观察空间降采样为正方形
+    game_env = ResizeObservation(game_env, OBSERVATION_SHAP)
 
-# 将关联的四帧合并到一个观察状态中
-game_env = FrameStack(game_env, num_stack=4)
+    # 将关联的四帧合并到一个观察状态中
+    game_env = FrameStack(game_env, num_stack=4)
+
+    return game_env

@@ -2,14 +2,19 @@ import numpy as np
 import torch
 from tensordict import TensorDict
 from torchrl.data import TensorDictReplayBuffer, LazyMemmapStorage
-
 from CNN import MiniCnnModel
+
+from custom_common_dict import USE_CUDA
+
+
+def chose_action_from_network_output(network_output):
+    return torch.argmax(network_output, dim=1).item()
 
 
 class GameAgent:
-    def __init__(self, state_dim, action_dim, save_dir, last_model_path=None, exploration_rate=1.0):
+    def __init__(self, state_dim, action_dim, save_dir, checkpoint=None, exploration_rate=1.0):
         # check device
-        self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        self.device = "cuda" if USE_CUDA else "cpu"
         #   game agent setting
         self.state_dim = state_dim
         self.action_dim = action_dim
@@ -17,10 +22,10 @@ class GameAgent:
 
         self.use_cuda = torch.cuda.is_available()
 
-        if last_model_path:
-            self.net = torch.load(last_model_path)
-        else:
-            self.net = MiniCnnModel(input_dim=self.state_dim, output_dim=self.action_dim).float()
+        self.net = MiniCnnModel(input_dim=self.state_dim, output_dim=self.action_dim).float()
+
+        if checkpoint:
+            self.load(checkpoint)
 
         self.net = self.net.to(device=self.device)
 
@@ -47,7 +52,19 @@ class GameAgent:
         self.learn_every = 3
         self.sync_every = 1e4
 
-    def act(self, state):
+    def act(self, state, play=False):
+        if play:
+            # 根据模型预测探索
+            state = state.__array__()
+            if self.use_cuda:
+                state = torch.tensor(state).cuda()
+            else:
+                state = torch.tensor(state)
+            state = state.unsqueeze(0)
+            action_value = self.net(state, model='online')
+            action_idx = chose_action_from_network_output(action_value)
+            return action_idx
+
         if np.random.rand() < self.exploration_rate:
             # 随机探索
             action_idx = np.random.randint(self.action_dim)
@@ -60,7 +77,7 @@ class GameAgent:
                 state = torch.tensor(state)
             state = state.unsqueeze(0)
             action_value = self.net(state, model='online')
-            action_idx = torch.argmax(action_value, dim=1).item()
+            action_idx = chose_action_from_network_output(action_value)
 
         self.exploration_rate *= self.exploration_rate_decay
         self.exploration_rate = max(self.exploration_rate, self.exploration_rate_min)
@@ -114,7 +131,7 @@ class GameAgent:
     @torch.no_grad()
     def td_target(self, reward, next_state, done):
         next_state_Q = self.net(next_state, model='online')
-        best_action = torch.argmax(next_state_Q, dim=1)
+        best_action = chose_action_from_network_output(next_state_Q)
         next_Q = self.net(next_state, model='target')[
             np.arange(0, self.batch_size), best_action
         ]
@@ -129,16 +146,6 @@ class GameAgent:
 
     def sync_Q_target(self):
         self.net.target.load_state_dict(self.net.online.state_dict())
-
-    def save(self):
-        save_path = (
-                self.save_dir / f"mario_net_{int(self.curr_step // self.save_every)}.chkpt"
-        )
-        torch.save(
-            dict(model=self.net.state_dict(), exploration_rate=self.exploration_rate),
-            save_path,
-        )
-        print(f"MarioNet saved to {save_path} at step {self.curr_step}")
 
     def learn(self):
         if self.curr_step % self.sync_every == 0:
@@ -166,3 +173,22 @@ class GameAgent:
         loss = self.update_Q_online(td_est, td_tgt)
 
         return td_est.mean().item(), loss
+
+    def save(self):
+        save_path = (
+                self.save_dir / f"mario_net_{int(self.curr_step // self.save_every)}.chkpt"
+        )
+        torch.save(
+            dict(model=self.net.state_dict(), exploration_rate=self.exploration_rate),
+            save_path,
+        )
+        print(f"MarioNet saved to {save_path} at step {self.curr_step}")
+
+    def load(self, load_path):
+        ckp = torch.load(load_path, map_location=('cuda' if self.use_cuda else 'cpu'))
+        exploration_rate = ckp.get('exploration_rate')
+        state_dict = ckp.get('model')
+
+        print(f"Loading model at {load_path} with exploration rate {exploration_rate}")
+        self.net.load_state_dict(state_dict)
+        self.exploration_rate = exploration_rate
