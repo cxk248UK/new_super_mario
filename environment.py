@@ -63,7 +63,7 @@ class SkipFrame(gym.Wrapper):
             total_reward += reward
             if terminated or truncated:
                 break
-        return observation, reward, terminated, truncated, info
+        return observation, total_reward, terminated, truncated, info
 
 
 def init_environment(render=False):
