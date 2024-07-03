@@ -1,7 +1,7 @@
 import gymnasium as gym
 import numpy as np
 import retro
-from gymnasium.wrappers import FrameStack, GrayScaleObservation, ResizeObservation
+from gymnasium.wrappers import FrameStack, GrayScaleObservation, ResizeObservation, TransformObservation
 
 from custom_common_dict import ALLOW_ACTION_COMBOS, OBSERVATION_SHAP, GAME_NAME, TRAIN_RENDER, PLAY_RENDER
 
@@ -74,16 +74,10 @@ def init_environment(render=False):
 
     game_env = SonicDiscretizer(game_env)
 
-    # 每四帧合并为一个帧
-    game_env = SkipFrame(game_env, 4)
-
-    # RGB转换为灰度并减少一个颜色维度
+    # Apply Wrappers to environment
+    game_env = SkipFrame(game_env, skip=4)
     game_env = GrayScaleObservation(game_env, keep_dim=False)
-
-    # 间原观察空间降采样为正方形
-    game_env = ResizeObservation(game_env, OBSERVATION_SHAP)
-
-    # 将关联的四帧合并到一个观察状态中
+    game_env = ResizeObservation(game_env, shape=84)
+    game_env = TransformObservation(game_env, f=lambda x: x / 255.)
     game_env = FrameStack(game_env, num_stack=4)
-
     return game_env
