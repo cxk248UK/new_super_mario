@@ -12,7 +12,7 @@ TRAIN_RENDER = 'None'
 PLAY_RENDER = 'human'
 TRAINED_MODEL_PATH = 'mario_net_31.chkpt'
 
-ALLOW_ACTION_COMBOS = [['RIGHT'], ['RIGHT', 'A'], ['LEFT'], ['LEFT', 'A'], ['DOWN'], ['DOWN', 'A']]
+ALLOW_ACTION_COMBOS = [['RIGHT'], ['RIGHT', 'A']]
 # for button in OPERATE_BUTTONS:
 #     ALLOW_ACTION_COMBOS.append([button])
 #
