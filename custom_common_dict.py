@@ -1,4 +1,5 @@
 import torch
+import json
 
 USE_CUDA = torch.cuda.is_available()
 
@@ -9,14 +10,14 @@ MENU_BUTTONS = ['SELECT', 'START']
 GAME_NAME = 'SuperMarioBros-Nes'
 TRAIN_RENDER = 'None'
 PLAY_RENDER = 'human'
-TRAINED_MODEL_PATH = 'trained_mario.chkpt'
+TRAINED_MODEL_PATH = 'mario_net_31.chkpt'
 
-ALLOW_ACTION_COMBOS = [['RIGHT'], ['RIGHT', 'A']]
+ALLOW_ACTION_COMBOS = [['RIGHT'], ['RIGHT', 'A'], ['LEFT'], ['LEFT', 'A'], ['DOWN'], ['DOWN', 'A']]
 # for button in OPERATE_BUTTONS:
 #     ALLOW_ACTION_COMBOS.append([button])
 #
 # for first_button_index in range(len(OPERATE_BUTTONS)):
-#     for second_button_index in range(first_button_index + 1, len(OPERATE_BUTTONS)):
+#     for second_button_index in range(first_button_index + 1, len(OPERATE_BUTTONS)):2
 #         ALLOW_ACTION_COMBOS.append([OPERATE_BUTTONS[first_button_index], OPERATE_BUTTONS[second_button_index]])
 #
 # for menu in MENU_BUTTONS:
@@ -34,3 +35,10 @@ OBSERVATION_SHAP = (FRAME_WIDTH, FRAME_HIGH)
 # SAVE_DIR = '../drive/MyDrive/Colab Notebooks/checkpoints'
 # 本地保存地址
 SAVE_DIR = 'checkpoints'
+
+#
+# EXPERT_DATA_FILE = open('expert_data','r')
+# EXPERT_DATA = EXPERT_DATA_FILE.readlines()
+# EXPERT_DATA_FILE.close()
+# EXPERT_DATA = json.load(EXPERT_DATA)
+
