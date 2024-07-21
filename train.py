@@ -1,8 +1,6 @@
 import datetime
 from pathlib import Path
 
-import torch
-
 from agent import GameAgent
 from environment import init_environment
 from learn_log import MetricLogger
@@ -22,7 +20,7 @@ def train():
 
     logger = MetricLogger(save_dir)
 
-    episodes = 500000
+    episodes = 400000
 
     for e in range(0, episodes):
 
@@ -56,8 +54,12 @@ def train():
 
         logger.log_episode()
 
-        if (e % 10 == 0) or (e == episodes - 1):
-            logger.record(episode=e, epsilon=mario.exploration_rate, step=mario.curr_step)
+        if e % 20 == 0:
+            logger.record(
+                episode=e,
+                epsilon=mario.exploration_rate,
+                step=mario.curr_step
+            )
 
 
 if __name__ == '__main__':

@@ -1,7 +1,7 @@
 import copy
-
 import torch
 from torch import nn
+from custom_common_dict import NET_INPUT_SHAPE, NET_OUTPUT_DIM
 
 
 class MiniCnnModel(nn.Module):
@@ -57,3 +57,6 @@ class MiniSingleCnn(nn.Module):
     def forward(self, input_frame):
         input_frame = input_frame.to(torch.float)
         return self.net(input_frame)
+
+
+mini_single_cnn = MiniSingleCnn(NET_INPUT_SHAPE, NET_OUTPUT_DIM)

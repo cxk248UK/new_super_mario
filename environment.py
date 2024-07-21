@@ -2,7 +2,7 @@ import gymnasium as gym
 import numpy as np
 import retro
 from gymnasium.wrappers import FrameStack, GrayScaleObservation, ResizeObservation, TransformObservation
-
+import torch
 from custom_common_dict import ALLOW_ACTION_COMBOS, OBSERVATION_SHAP, GAME_NAME, TRAIN_RENDER, PLAY_RENDER
 
 

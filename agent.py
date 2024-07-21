@@ -8,10 +8,6 @@ from CNN import MiniCnnModel
 from custom_common_dict import USE_CUDA
 
 
-def chose_action_from_network_output(network_output):
-    return torch.argmax(network_output, dim=1)
-
-
 def chose_action_from_network_output_with_softmax(network_output):
     softmax = nn.Softmax(dim=1)
     network_output = softmax(network_output)
@@ -139,7 +135,8 @@ class GameAgent:
     @torch.no_grad()
     def td_target(self, reward, next_state, done):
         next_state_Q = self.net(next_state, model='online')
-        best_action = chose_action_from_network_output(next_state_Q)
+        best_action = chose_action_from_network_output_with_softmax(next_state_Q)
+        best_action = torch.squeeze(best_action)
         next_Q = self.net(next_state, model='target')[
             np.arange(0, self.batch_size), best_action
         ]

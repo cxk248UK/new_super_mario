@@ -1,18 +1,15 @@
-import datetime
-import time
-
 import numpy as np
+import time, datetime
+import matplotlib.pyplot as plt
 
-
-class MetricLogger:
+class MetricLogger():
     def __init__(self, save_dir):
         self.save_log = save_dir / "log"
         with open(self.save_log, "w") as f:
             f.write(
                 f"{'Episode':>8}{'Step':>8}{'Epsilon':>10}{'MeanReward':>15}"
                 f"{'MeanLength':>15}{'MeanLoss':>15}{'MeanQValue':>15}"
-                f"{'TimeDelta':>15}"
-                f"{'Time':>20}\n"
+                f"{'TimeDelta':>15}{'Time':>20}\n"
             )
         self.ep_rewards_plot = save_dir / "reward_plot.jpg"
         self.ep_lengths_plot = save_dir / "length_plot.jpg"
@@ -36,6 +33,7 @@ class MetricLogger:
 
         # Timing
         self.record_time = time.time()
+
 
     def log_step(self, reward, loss, q):
         self.curr_ep_reward += reward
@@ -68,14 +66,15 @@ class MetricLogger:
         self.curr_ep_loss_length = 0
 
     def record(self, episode, epsilon, step):
-        mean_ep_reward = np.round(np.mean(self.ep_rewards[-10:]), 3)
-        mean_ep_length = np.round(np.mean(self.ep_lengths[-10:]), 3)
-        mean_ep_loss = np.round(np.mean(self.ep_avg_losses[-10:]), 3)
-        mean_ep_q = np.round(np.mean(self.ep_avg_qs[-10:]), 3)
+        mean_ep_reward = np.round(np.mean(self.ep_rewards[-100:]), 3)
+        mean_ep_length = np.round(np.mean(self.ep_lengths[-100:]), 3)
+        mean_ep_loss = np.round(np.mean(self.ep_avg_losses[-100:]), 3)
+        mean_ep_q = np.round(np.mean(self.ep_avg_qs[-100:]), 3)
         self.moving_avg_ep_rewards.append(mean_ep_reward)
         self.moving_avg_ep_lengths.append(mean_ep_length)
         self.moving_avg_ep_avg_losses.append(mean_ep_loss)
         self.moving_avg_ep_avg_qs.append(mean_ep_q)
+
 
         last_record_time = self.record_time
         self.record_time = time.time()
@@ -101,8 +100,7 @@ class MetricLogger:
                 f"{datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'):>20}\n"
             )
 
-        # for metric in ["ep_lengths", "ep_avg_losses", "ep_avg_qs", "ep_rewards"]:
-        #     plt.clf()
-        #     plt.plot(getattr(self, f"moving_avg_{metric}"), label=f"moving_avg_{metric}")
-        #     plt.legend()
-        #     plt.savefig(getattr(self, f"{metric}_plot"))
+        for metric in ["ep_rewards", "ep_lengths", "ep_avg_losses", "ep_avg_qs"]:
+            plt.plot(getattr(self, f"moving_avg_{metric}"))
+            plt.savefig(getattr(self, f"{metric}_plot"))
+            plt.clf()
