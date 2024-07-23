@@ -3,6 +3,10 @@ import json
 
 USE_CUDA = torch.cuda.is_available()
 
+USE_DEVICE = 'cpu'
+if USE_CUDA:
+    USE_DEVICE = 'cuda'
+
 # 允许的动作组合,单按键或两个按键的组合
 # 按键列表['B', None, 'SELECT', 'START', 'UP', 'DOWN', 'LEFT', 'RIGHT', 'A']
 OPERATE_BUTTONS = ['B', 'UP', 'DOWN', 'LEFT', 'RIGHT', 'A']
