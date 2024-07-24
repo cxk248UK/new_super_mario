@@ -125,7 +125,7 @@ class GameAgent:
         """
         if self.flag == 1:
             batch = self.memory.sample(int(self.batch_size/2)).to(self.device)
-            expert_batch = EXPERT_DATA_MEMORY.sample(int(self.batch_size/2))
+            expert_batch = EXPERT_DATA_MEMORY.sample(int(self.batch_size/2)).to(self.device)
             state, next_state, action, reward, done = (torch.cat((batch.get(key),expert_batch.get(key)),0) for key in
                                                        ("state", "next_state", "action", "reward", "done"))
         else:
