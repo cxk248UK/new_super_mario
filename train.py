@@ -39,7 +39,7 @@ def train(flag=0):
             # Agent performs action
             observation, reward, terminated, truncated, info = game_env.step(action)
 
-            if flag == 1 and e >= 2000 and mario.flag == 1:
+            if flag == 1 and e >= 10000 and mario.flag == 1:
                 mario.flag = 0
                 mario.memory.empty()
             lives = info.get('lives')
@@ -53,7 +53,7 @@ def train(flag=0):
             done = terminated or truncated or (lives < 2) or (last_time_count > 10)
 
             # Remember
-            if flag == 1 and e < 2000:
+            if flag == 1 and e < 10000:
                 mario.cache(state, observation, action, 0, int(done))
             else:
                 mario.cache(state, observation, action, reward, int(done))
