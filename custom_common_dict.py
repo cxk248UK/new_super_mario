@@ -1,5 +1,6 @@
 import torch
 import json
+from torchrl.data import TensorDictReplayBuffer, LazyMemmapStorage
 
 USE_CUDA = torch.cuda.is_available()
 
@@ -54,3 +55,13 @@ MAX_EXPLORATION_EPISODES = 40000
 
 EXPLORATION_RATE_DECAY = 0.99999975
 MIN_EXPLORATION_RATE = 0.1
+
+EXPERT_DATA = []
+
+for i in range(1, 6):
+    EXPERT_DATA.extend(torch.load(f'expert_data_{i}'))
+
+EXPERT_DATA_MEMORY = TensorDictReplayBuffer(storage=LazyMemmapStorage(100000, device=torch.device("cpu")))
+
+for expert_data in EXPERT_DATA:
+    EXPERT_DATA_MEMORY.add(expert_data)

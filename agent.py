@@ -5,7 +5,7 @@ from tensordict import TensorDict
 from torchrl.data import TensorDictReplayBuffer, LazyMemmapStorage
 from CNN import MiniCnnModel
 
-from custom_common_dict import USE_CUDA
+from custom_common_dict import USE_CUDA, EXPERT_DATA_MEMORY
 
 
 def chose_action_from_network_output_with_softmax(network_output):
@@ -16,7 +16,7 @@ def chose_action_from_network_output_with_softmax(network_output):
 
 
 class GameAgent:
-    def __init__(self, state_dim, action_dim, save_dir, checkpoint=None, exploration_rate=1.0):
+    def __init__(self, state_dim, action_dim, save_dir, checkpoint=None, exploration_rate=1.0, flag=0):
         # check device
         self.device = "cuda" if USE_CUDA else "cpu"
         #   game agent setting
@@ -55,6 +55,8 @@ class GameAgent:
         self.min_experience_num = 1e4
         self.learn_every = 3
         self.sync_every = 1e4
+
+        self.flag = flag
 
     def act(self, state, play=False):
         if play:
@@ -121,9 +123,15 @@ class GameAgent:
         """
         Retrieve a batch of experiences from memory
         """
-        batch = self.memory.sample(self.batch_size).to(self.device)
-        state, next_state, action, reward, done = (batch.get(key) for key in
-                                                   ("state", "next_state", "action", "reward", "done"))
+        if self.flag == 1:
+            batch = self.memory.sample(int(self.batch_size/2)).to(self.device)
+            expert_batch = EXPERT_DATA_MEMORY.sample(int(self.batch_size/2))
+            state, next_state, action, reward, done = (torch.cat((batch.get(key),expert_batch.get(key)),0) for key in
+                                                       ("state", "next_state", "action", "reward", "done"))
+        else:
+            batch = self.memory.sample(self.batch_size).to(self.device)
+            state, next_state, action, reward, done = (batch.get(key) for key in
+                                                       ("state", "next_state", "action", "reward", "done"))
         return state, next_state, action.squeeze(), reward.squeeze(), done.squeeze()
 
     def td_estimate(self, state, action):
