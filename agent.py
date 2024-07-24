@@ -41,7 +41,7 @@ class GameAgent:
         self.save_every = 5e5
 
         #     cache and recall setting
-        self.memory = TensorDictReplayBuffer(storage=LazyMemmapStorage(10000, device=torch.device(self.device)))
+        self.memory = TensorDictReplayBuffer(storage=LazyMemmapStorage(100000, device=torch.device("cpu")))
         self.batch_size = 32
 
         #     learn rate for Q_learning
@@ -52,7 +52,7 @@ class GameAgent:
         self.loss_fn = torch.nn.SmoothL1Loss()
 
         #       learning setting
-        self.min_experience_num = 1e3
+        self.min_experience_num = 1e4
         self.learn_every = 3
         self.sync_every = 1e4
 
@@ -107,11 +107,11 @@ class GameAgent:
         state = first_if_tuple(state).__array__()
         next_state = first_if_tuple(next_state).__array__()
 
-        state = torch.tensor(state, device=self.device)
-        next_state = torch.tensor(next_state, device=self.device)
-        action = torch.tensor([action], device=self.device)
-        reward = torch.tensor([reward], device=self.device)
-        done = torch.tensor([done], device=self.device)
+        state = torch.tensor(state)
+        next_state = torch.tensor(next_state)
+        action = torch.tensor([action])
+        reward = torch.tensor([reward])
+        done = torch.tensor([done])
 
         # self.memory.append((state, next_state, action, reward, done,))
         self.memory.add(
