@@ -20,7 +20,7 @@ def train():
 
     logger = MetricLogger(save_dir)
 
-    episodes = 400000
+    episodes = 40000
 
     for e in range(0, episodes):
 
