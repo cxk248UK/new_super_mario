@@ -42,7 +42,7 @@ class GameAgent:
 
         #     cache and recall setting
         self.memory = TensorDictReplayBuffer(storage=LazyMemmapStorage(100000, device=torch.device("cpu")))
-        self.batch_size = 32
+        self.batch_size = 320
 
         #     learn rate for Q_learning
         self.gamma = 0.9
