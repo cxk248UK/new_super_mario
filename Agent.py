@@ -1,3 +1,5 @@
+import random
+
 import numpy as np
 import torch
 from torch import nn
@@ -5,6 +7,7 @@ from tensordict import TensorDict
 from torchrl.data import TensorDictReplayBuffer, LazyMemmapStorage
 from CNN import MiniCnnModel, MiniTransformerCnnModel
 from ProjectConf import DefaultProjectConf
+from collections import deque
 
 from custom_common_dict import USE_CUDA, EXPERT_DATA_MEMORY
 
@@ -42,7 +45,7 @@ class GameAgent:
         self.save_every = conf.save_every
 
         #     cache and recall setting
-        self.memory = TensorDictReplayBuffer(storage=LazyMemmapStorage(100000, device=torch.device("cpu")))
+        self.memory = deque(maxlen=100000)
         self.batch_size = conf.batch_size
 
         #     learn rate for Q_learning
@@ -126,8 +129,7 @@ class GameAgent:
         done = torch.tensor([done])
 
         # self.memory.append((state, next_state, action, reward, done,))
-        self.memory.add(
-            TensorDict({"state": state, "next_state": next_state, "action": action, "reward": reward, "done": done}))
+        self.memory.append((state, next_state, action, reward, done,))
 
     def recall(self):
         """
@@ -135,15 +137,16 @@ class GameAgent:
         """
         # soft q imitation learning recall
         if self.imitation_flag:
-            batch = self.memory.sample(int(self.batch_size / 2)).to(self.device)
-            expert_batch = EXPERT_DATA_MEMORY.sample(int(self.batch_size / 2)).to(self.device)
-            state, next_state, action, reward, done = (torch.cat((batch.get(key), expert_batch.get(key)), 0) for key in
-                                                       ("state", "next_state", "action", "reward", "done"))
+            exploration_batch = random.sample(self.memory, int(self.batch_size / 2))
+            expert_batch = random.sample(EXPERT_DATA_MEMORY, self.batch_size - int(self.batch_size / 2))
+            batch = exploration_batch + expert_batch
+            state, next_state, action, reward, done = map(torch.stack, zip(*batch))
         # classical soft q learning recall
         else:
-            batch = self.memory.sample(self.batch_size).to(self.device)
-            state, next_state, action, reward, done = (batch.get(key) for key in
-                                                       ("state", "next_state", "action", "reward", "done"))
+            batch = random.sample(self.memory, self.batch_size)
+            state, next_state, action, reward, done = map(torch.stack, zip(*batch))
+
+        state, next_state, action, reward, done = map(torch.stack, zip(*batch))
         return state, next_state, action.squeeze(), reward.squeeze(), done.squeeze()
 
     def td_estimate(self, state, action):

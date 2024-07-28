@@ -1,3 +1,5 @@
+from collections import deque
+
 import torch
 import json
 from torchrl.data import TensorDictReplayBuffer, LazyMemmapStorage
@@ -61,7 +63,8 @@ EXPERT_DATA = []
 for i in range(1, 6):
     EXPERT_DATA.extend(torch.load(f'expert_data_{i}'))
 
-EXPERT_DATA_MEMORY = TensorDictReplayBuffer(storage=LazyMemmapStorage(100000, device=torch.device("cpu")))
+EXPERT_DATA_MEMORY = deque(maxlen=100000)
 
 for expert_data in EXPERT_DATA:
-    EXPERT_DATA_MEMORY.add(expert_data)
+    EXPERT_DATA_MEMORY.append((expert_data.get('state'), expert_data.get('next_state'), expert_data.get('action'),
+                               expert_data.get('reward'), expert_data.get('done')))
