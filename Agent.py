@@ -3,7 +3,8 @@ import torch
 from torch import nn
 from tensordict import TensorDict
 from torchrl.data import TensorDictReplayBuffer, LazyMemmapStorage
-from CNN import MiniCnnModel
+from CNN import MiniCnnModel, MiniTransformerCnnModel
+from ProjectConf import DefaultProjectConf
 
 from custom_common_dict import USE_CUDA, EXPERT_DATA_MEMORY
 
@@ -16,7 +17,8 @@ def chose_action_from_network_output_with_softmax(network_output):
 
 
 class GameAgent:
-    def __init__(self, state_dim, action_dim, save_dir, checkpoint=None, exploration_rate=1.0, flag=0):
+    def __init__(self, state_dim, action_dim, save_dir,
+                 conf=DefaultProjectConf()):
         # check device
         self.device = "cuda" if USE_CUDA else "cpu"
         #   game agent setting
@@ -26,37 +28,42 @@ class GameAgent:
 
         self.use_cuda = torch.cuda.is_available()
 
-        self.net = MiniCnnModel(input_dim=self.state_dim, output_dim=self.action_dim).float()
+        if conf.net_name == 'MiniTransformerCnnModel':
+            self.net = MiniTransformerCnnModel(input_dim=self.state_dim, output_dim=self.action_dim,
+                                               batch_size=conf.batch_size).float()
+        else:
+            self.net = MiniCnnModel(input_dim=self.state_dim, output_dim=self.action_dim).float()
 
-        if checkpoint:
-            self.load(checkpoint)
-
-        self.net = self.net.to(device=self.device)
-
-        self.exploration_rate = exploration_rate
-        self.exploration_rate_decay = 0.99999975
-        self.exploration_rate_min = 0.1
+        self.exploration_rate = conf.exploration_rate
+        self.exploration_rate_decay = conf.exploration_rate_decay
+        self.exploration_rate_min = conf.exploration_rate_min
         self.curr_step = 0
 
-        self.save_every = 5e5
+        self.save_every = conf.save_every
 
         #     cache and recall setting
         self.memory = TensorDictReplayBuffer(storage=LazyMemmapStorage(100000, device=torch.device("cpu")))
-        self.batch_size = 320
+        self.batch_size = conf.batch_size
 
         #     learn rate for Q_learning
-        self.gamma = 0.9
+        self.gamma = conf.gamma
 
         #     CNN setting
         self.optimizer = torch.optim.Adam(self.net.parameters(), lr=0.00025)
         self.loss_fn = torch.nn.SmoothL1Loss()
 
         #       learning setting
-        self.min_experience_num = 1e4
-        self.learn_every = 3
-        self.sync_every = 1e4
+        self.min_experience_num = conf.min_experience_num
+        self.learn_every = conf.learn_every
+        self.sync_every = conf.sync_every
 
-        self.flag = flag
+        self.imitation_flag = conf.imitation
+
+        # load model if possible
+        if conf.checkpoint:
+            self.load(conf.checkpoint)
+
+        self.net = self.net.to(device=self.device)
 
     def act(self, state, play=False):
         if play:
@@ -112,7 +119,10 @@ class GameAgent:
         state = torch.tensor(state)
         next_state = torch.tensor(next_state)
         action = torch.tensor([action])
-        reward = torch.tensor([reward])
+        if self.imitation_flag:
+            reward = torch.tensor([0.0])
+        else:
+            reward = torch.tensor([reward])
         done = torch.tensor([done])
 
         # self.memory.append((state, next_state, action, reward, done,))
@@ -123,11 +133,13 @@ class GameAgent:
         """
         Retrieve a batch of experiences from memory
         """
-        if self.flag == 1:
-            batch = self.memory.sample(int(self.batch_size/2)).to(self.device)
-            expert_batch = EXPERT_DATA_MEMORY.sample(int(self.batch_size/2)).to(self.device)
-            state, next_state, action, reward, done = (torch.cat((batch.get(key),expert_batch.get(key)),0) for key in
+        # soft q imitation learning recall
+        if self.imitation_flag:
+            batch = self.memory.sample(int(self.batch_size / 2)).to(self.device)
+            expert_batch = EXPERT_DATA_MEMORY.sample(int(self.batch_size / 2)).to(self.device)
+            state, next_state, action, reward, done = (torch.cat((batch.get(key), expert_batch.get(key)), 0) for key in
                                                        ("state", "next_state", "action", "reward", "done"))
+        # classical soft q learning recall
         else:
             batch = self.memory.sample(self.batch_size).to(self.device)
             state, next_state, action, reward, done = (batch.get(key) for key in
@@ -196,6 +208,7 @@ class GameAgent:
             save_path,
         )
         print(f"MarioNet saved to {save_path} at step {self.curr_step}")
+        return save_path
 
     def load(self, load_path):
         ckp = torch.load(load_path, map_location=('cuda' if self.use_cuda else 'cpu'))
@@ -205,3 +218,7 @@ class GameAgent:
         print(f"Loading model at {load_path} with exploration rate {exploration_rate}")
         self.net.load_state_dict(state_dict)
         self.exploration_rate = exploration_rate
+
+    def switch_imitation(self):
+        self.imitation_flag = False
+        self.memory.empty()

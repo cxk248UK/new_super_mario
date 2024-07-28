@@ -1,7 +1,30 @@
 import copy
+import math
+
 import torch
-from torch import nn
-from custom_common_dict import NET_INPUT_SHAPE, NET_OUTPUT_DIM
+from torch import nn, Tensor
+
+
+class PositionalEncoding(nn.Module):
+
+    def __init__(self, d_model: int, dropout: float = 0.1, max_len: int = 32):
+        super().__init__()
+        self.dropout = nn.Dropout(p=dropout)
+
+        position = torch.arange(max_len).unsqueeze(1)
+        div_term = torch.exp(torch.arange(0, d_model, 2) * (-math.log(10000.0) / d_model))
+        pe = torch.zeros(max_len, d_model)
+        pe[:, 0::2] = torch.sin(position * div_term)
+        pe[:, 1::2] = torch.cos(position * div_term)
+        self.register_buffer('pe', pe)
+
+    def forward(self, x: Tensor) -> Tensor:
+        """
+        Arguments:
+            x: Tensor, shape ``[seq_len, batch_size, embedding_dim]``
+        """
+        x = x + self.pe[:x.size(0)]
+        return self.dropout(x)
 
 
 class MiniCnnModel(nn.Module):
@@ -28,7 +51,7 @@ class MiniCnnModel(nn.Module):
         for p in self.target.parameters():
             p.requires_grad = False
 
-    def forward(self, input_frame, model):
+    def forward(self, input_frame, model='online'):
         input_frame = input_frame.to(torch.float)
         if model == 'online':
             return self.online(input_frame)
@@ -36,12 +59,13 @@ class MiniCnnModel(nn.Module):
             return self.target(input_frame)
 
 
-class MiniSingleCnn(nn.Module):
-    def __init__(self, input_dim, output_dim):
+class MiniTransformerCnnModel(nn.Module):
+
+    def __init__(self, input_dim, output_dim, batch_size=32):
         super().__init__()
         c, h, w = input_dim
 
-        self.net = nn.Sequential(
+        self.online = nn.Sequential(
             nn.Conv2d(in_channels=c, out_channels=32, kernel_size=8, stride=4),
             nn.ReLU(),
             nn.Conv2d(in_channels=32, out_channels=64, kernel_size=4, stride=2),
@@ -51,12 +75,22 @@ class MiniSingleCnn(nn.Module):
             nn.Flatten(),
             nn.Linear(3136, 512),
             nn.ReLU(),
+            PositionalEncoding(512, max_len=batch_size),
+            nn.TransformerEncoderLayer(d_model=512, nhead=8, dim_feedforward=1024),
+            nn.ReLU(),
+            nn.TransformerEncoderLayer(d_model=512, nhead=8, dim_feedforward=1024),
+            nn.ReLU(),
             nn.Linear(512, output_dim)
         )
 
-    def forward(self, input_frame):
+        self.target = copy.deepcopy(self.online)
+
+        for p in self.target.parameters():
+            p.requires_grad = False
+
+    def forward(self, input_frame, model='online'):
         input_frame = input_frame.to(torch.float)
-        return self.net(input_frame)
-
-
-mini_single_cnn = MiniSingleCnn(NET_INPUT_SHAPE, NET_OUTPUT_DIM)
+        if model == 'online':
+            return self.online(input_frame)
+        elif model == 'target':
+            return self.target(input_frame)

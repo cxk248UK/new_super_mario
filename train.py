@@ -1,30 +1,28 @@
 import datetime
 from pathlib import Path
 
-from agent import GameAgent
+from Agent import GameAgent
 from environment import init_environment
 from learn_log import MetricLogger
-from custom_common_dict import SAVE_DIR, FRAME_WIDTH, FRAME_HIGH, FRAME_SKIP, USE_CUDA
-import multiprocessing
-import sys
+from custom_common_dict import SAVE_DIR, USE_CUDA
+from ProjectConf import DefaultProjectConf
+import json
 
 
-def train(flag=0):
+def train(conf=DefaultProjectConf()):
     print(f"Using CUDA: {USE_CUDA}")
-    print(f'flag -- {flag}')
 
-    game_env = init_environment()
+    game_env = init_environment(conf=conf)
     save_dir = Path(SAVE_DIR) / f'{datetime.datetime.now().strftime("%Y-%m-%dT%H-%M-%S")}_{game_env.unwrapped.gamename}'
     save_dir.mkdir(parents=True)
 
-    mario = GameAgent(state_dim=(FRAME_SKIP, FRAME_WIDTH, FRAME_HIGH), action_dim=game_env.action_space.n,
-                      save_dir=save_dir, flag=flag)
+    mario = GameAgent(state_dim=(conf.skip_frame_num, conf.environment_shape, conf.environment_shape),
+                      action_dim=game_env.action_space.n,
+                      save_dir=save_dir, conf=conf)
 
     logger = MetricLogger(save_dir)
 
-    episodes = 40000
-
-    for e in range(0, episodes):
+    for e in range(conf.start_episode, conf.max_episodes):
 
         state = game_env.reset()[0]
 
@@ -38,10 +36,6 @@ def train(flag=0):
 
             # Agent performs action
             observation, reward, terminated, truncated, info = game_env.step(action)
-
-            if flag == 1 and e >= 10000 and mario.flag == 1:
-                mario.flag = 0
-                mario.memory.empty()
             lives = info.get('lives')
             time = info.get('time')
             if time != last_time:
@@ -52,11 +46,12 @@ def train(flag=0):
 
             done = terminated or truncated or (lives < 2) or (last_time_count > 10)
 
+            # half episodes of imitation switch to classical soft q learning
+            if mario.imitation_flag and (e > (conf.max_episodes / 2)):
+                mario.switch_imitation()
+
             # Remember
-            if flag == 1 and e < 10000:
-                mario.cache(state, observation, action, 0, int(done))
-            else:
-                mario.cache(state, observation, action, reward, int(done))
+            mario.cache(state, observation, action, reward, int(done))
 
             # Learn
             q, loss = mario.learn()
@@ -80,7 +75,7 @@ def train(flag=0):
                 step=mario.curr_step
             )
 
-
-if __name__ == '__main__':
-    flag = int(sys.argv[1])
-    train(flag)
+        if e % 1000 == 0 or e == conf.max_episodes-1:
+            with open(f'{save_dir}/conf.json', 'w') as json_file:
+                json.dump(conf.__dict__, json_file)
+                json_file.close()

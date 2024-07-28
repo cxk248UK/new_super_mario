@@ -4,6 +4,7 @@ import retro
 from gymnasium.wrappers import FrameStack, GrayScaleObservation, ResizeObservation, TransformObservation
 import torch
 from custom_common_dict import ALLOW_ACTION_COMBOS, OBSERVATION_SHAP, GAME_NAME, TRAIN_RENDER, PLAY_RENDER
+from ProjectConf import DefaultProjectConf
 
 
 # 动作包装
@@ -66,18 +67,18 @@ class SkipFrame(gym.Wrapper):
         return observation, total_reward, terminated, truncated, info
 
 
-def init_environment(render=False):
+def init_environment(render=False, conf=DefaultProjectConf()):
     if render:
-        game_env = retro.make(game=GAME_NAME, render_mode=PLAY_RENDER)
+        game_env = retro.make(game=conf.game_name, render_mode=PLAY_RENDER)
     else:
-        game_env = retro.make(game=GAME_NAME, render_mode=TRAIN_RENDER)
+        game_env = retro.make(game=conf.game_name, render_mode=TRAIN_RENDER)
 
     game_env = SonicDiscretizer(game_env)
 
     # Apply Wrappers to environment
-    game_env = SkipFrame(game_env, skip=4)
+    game_env = SkipFrame(game_env, skip=conf.skip_frame_num)
     game_env = GrayScaleObservation(game_env, keep_dim=False)
-    game_env = ResizeObservation(game_env, shape=84)
+    game_env = ResizeObservation(game_env, shape=conf.environment_shape)
     game_env = TransformObservation(game_env, f=lambda x: x / 255.)
-    game_env = FrameStack(game_env, num_stack=4)
+    game_env = FrameStack(game_env, num_stack=conf.skip_frame_num)
     return game_env
