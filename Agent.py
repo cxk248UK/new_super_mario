@@ -140,13 +140,18 @@ class GameAgent:
             exploration_batch = random.sample(self.memory, int(self.batch_size / 2))
             expert_batch = random.sample(EXPERT_DATA_MEMORY, self.batch_size - int(self.batch_size / 2))
             batch = exploration_batch + expert_batch
-            state, next_state, action, reward, done = map(torch.stack, zip(*batch))
         # classical soft q learning recall
         else:
             batch = random.sample(self.memory, self.batch_size)
-            state, next_state, action, reward, done = map(torch.stack, zip(*batch))
 
         state, next_state, action, reward, done = map(torch.stack, zip(*batch))
+
+        state = state.to(device=self.device)
+        next_state = next_state.to(device=self.device)
+        action = action.to(device=self.device)
+        reward = reward.to(device=self.device)
+        done = done.to(device=self.device)
+
         return state, next_state, action.squeeze(), reward.squeeze(), done.squeeze()
 
     def td_estimate(self, state, action):
