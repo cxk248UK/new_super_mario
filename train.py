@@ -1,5 +1,8 @@
+import copy
 import datetime
 from pathlib import Path
+
+import torch
 
 from Agent import GameAgent
 from environment import init_environment
@@ -22,9 +25,15 @@ def train(conf=DefaultProjectConf()):
 
     logger = MetricLogger(save_dir)
 
+    max_total_reward = 0
+    max_action_record = []
+
     for e in range(conf.start_episode, conf.max_episodes):
 
         state = game_env.reset()[0]
+
+        total_reward = 0
+        action_record = []
 
         last_time = 0
         last_time_count = 0
@@ -36,6 +45,10 @@ def train(conf=DefaultProjectConf()):
 
             # Agent performs action
             observation, reward, terminated, truncated, info = game_env.step(action)
+
+            total_reward += reward
+            action_record.append(action)
+
             lives = info.get('lives')
             time = info.get('time')
             if time != last_time:
@@ -75,7 +88,13 @@ def train(conf=DefaultProjectConf()):
                 step=mario.curr_step
             )
 
-        if e % 1000 == 0 or e == conf.max_episodes-1:
+        if e % 1000 == 0 or e == conf.max_episodes - 1:
             with open(f'{save_dir}/conf.json', 'w') as json_file:
                 json.dump(conf.__dict__, json_file)
                 json_file.close()
+
+        if total_reward > max_total_reward:
+            max_total_reward = total_reward
+            max_action_record = copy.deepcopy(action_record)
+            max_record = dict(max_reward=max_total_reward, action_record=max_action_record)
+            torch.save(max_record, f'{save_dir}/max_record')

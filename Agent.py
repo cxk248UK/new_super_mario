@@ -229,4 +229,4 @@ class GameAgent:
 
     def switch_imitation(self):
         self.imitation_flag = False
-        self.memory.empty()
+        self.memory.clear()
