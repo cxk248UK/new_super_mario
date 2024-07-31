@@ -2,6 +2,7 @@ class DefaultProjectConf:
     def __init__(self):
         # description
         self.desc = 'default configuration'
+        self.save_dir = None
 
         # environment conf
         self.game_name = 'SuperMarioBros-Nes'
@@ -12,6 +13,7 @@ class DefaultProjectConf:
         # learning conf
         self.net_name = 'MiniCnnModel'
         self.imitation = False
+        self.imitation_episodes = 10000
         self.exploration_rate = 1.0
         self.exploration_rate_decay = 0.99999975
         self.exploration_rate_min = 0.1

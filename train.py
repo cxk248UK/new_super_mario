@@ -16,7 +16,11 @@ def train(conf=DefaultProjectConf()):
     print(f"Using CUDA: {USE_CUDA}")
 
     game_env = init_environment(conf=conf)
-    save_dir = Path(SAVE_DIR) / f'{datetime.datetime.now().strftime("%Y-%m-%dT%H-%M-%S")}_{game_env.unwrapped.gamename}'
+    if conf.save_dir:
+        save_dir = Path(
+            conf.save_dir) / f'{datetime.datetime.now().strftime("%Y-%m-%dT%H-%M-%S")}_{game_env.unwrapped.gamename}'
+    else:
+        save_dir = Path(SAVE_DIR) / f'{datetime.datetime.now().strftime("%Y-%m-%dT%H-%M-%S")}_{game_env.unwrapped.gamename}'
     save_dir.mkdir(parents=True)
 
     mario = GameAgent(state_dim=(conf.skip_frame_num, conf.environment_shape, conf.environment_shape),
@@ -60,7 +64,7 @@ def train(conf=DefaultProjectConf()):
             done = terminated or truncated or (lives < 2) or (last_time_count > 10)
 
             # half episodes of imitation switch to classical soft q learning
-            if mario.imitation_flag and (e > (conf.max_episodes / 2)):
+            if mario.imitation_flag and (e == conf.imitation_episodes):
                 mario.switch_imitation()
 
             # Remember

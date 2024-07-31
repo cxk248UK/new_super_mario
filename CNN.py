@@ -59,9 +59,39 @@ class MiniCnnModel(nn.Module):
             return self.target(input_frame)
 
 
+class MiniSimplifyCnnModel(nn.Module):
+
+    def __init__(self, input_dim, output_dim):
+        super().__init__()
+        c, h, w = input_dim
+
+        self.online = nn.Sequential(
+            nn.Conv2d(in_channels=4, out_channels=32, kernel_size=8, stride=4),
+            nn.ReLU(),
+            nn.Conv2d(in_channels=32, out_channels=32, kernel_size=4, stride=2),
+            nn.ReLU(),
+            nn.Flatten(),
+            nn.Linear(2592, 512),
+            nn.ReLU(),
+            nn.Linear(512, output_dim)
+        )
+
+        self.target = copy.deepcopy(self.online)
+
+        for p in self.target.parameters():
+            p.requires_grad = False
+
+    def forward(self, input_frame, model='online'):
+        input_frame = input_frame.to(torch.float)
+        if model == 'online':
+            return self.online(input_frame)
+        elif model == 'target':
+            return self.target(input_frame)
+
+
 class MiniTransformerCnnModel(nn.Module):
 
-    def __init__(self, input_dim, output_dim, batch_size=32):
+    def __init__(self, input_dim, output_dim):
         super().__init__()
         c, h, w = input_dim
 
@@ -75,7 +105,7 @@ class MiniTransformerCnnModel(nn.Module):
             nn.Flatten(),
             nn.Linear(3136, 512),
             nn.ReLU(),
-            PositionalEncoding(512, max_len=batch_size),
+            PositionalEncoding(512, max_len=c),
             nn.TransformerEncoderLayer(d_model=512, nhead=8, dim_feedforward=1024),
             nn.ReLU(),
             nn.TransformerEncoderLayer(d_model=512, nhead=8, dim_feedforward=1024),

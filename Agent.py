@@ -5,7 +5,8 @@ import torch
 from torch import nn
 from tensordict import TensorDict
 from torchrl.data import TensorDictReplayBuffer, LazyMemmapStorage
-from CNN import MiniCnnModel, MiniTransformerCnnModel
+
+import CNN
 from ProjectConf import DefaultProjectConf
 from collections import deque
 
@@ -31,11 +32,9 @@ class GameAgent:
 
         self.use_cuda = torch.cuda.is_available()
 
-        if conf.net_name == 'MiniTransformerCnnModel':
-            self.net = MiniTransformerCnnModel(input_dim=self.state_dim, output_dim=self.action_dim,
-                                               batch_size=conf.batch_size).float()
-        else:
-            self.net = MiniCnnModel(input_dim=self.state_dim, output_dim=self.action_dim).float()
+        net_class = getattr(CNN, conf.net_name)
+
+        self.net = net_class(input_dim=self.state_dim, output_dim=self.action_dim)
 
         self.exploration_rate = conf.exploration_rate
         self.exploration_rate_decay = conf.exploration_rate_decay
