@@ -44,7 +44,7 @@ class GameAgent:
         self.save_every = conf.save_every
 
         #     cache and recall setting
-        self.memory = deque(maxlen=2000)
+        self.memory = deque(maxlen=100000)
         self.batch_size = conf.batch_size
 
         #     learn rate for Q_learning
@@ -187,6 +187,9 @@ class GameAgent:
             self.save()
 
         if self.curr_step < self.min_experience_num:
+            return None, None
+
+        if len(self.memory) < self.batch_size:
             return None, None
 
         if self.curr_step % self.learn_every != 0:
