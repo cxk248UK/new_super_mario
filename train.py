@@ -32,7 +32,7 @@ def train(conf=DefaultProjectConf()):
     max_total_reward = 0
     max_action_record = []
 
-    for e in range(conf.start_episode, conf.max_episodes):
+    for e in range(conf.start_episode, conf.max_episodes+1):
 
         state = game_env.reset()[0]
 

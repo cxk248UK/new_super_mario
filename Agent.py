@@ -36,8 +36,12 @@ class GameAgent:
 
         self.net = net_class(input_dim=self.state_dim, output_dim=self.action_dim)
 
-        self.exploration_rate = conf.exploration_rate
-        self.exploration_rate_decay = conf.exploration_rate_decay
+        if conf.imitation:
+            self.exploration_rate = conf.imitation_exploration_rate
+            self.exploration_rate_decay = conf.imitation_exploration_rate_decay
+        else:
+            self.exploration_rate = conf.exploration_rate
+            self.exploration_rate_decay = conf.exploration_rate_decay
         self.exploration_rate_min = conf.exploration_rate_min
         self.curr_step = 0
 
@@ -66,6 +70,8 @@ class GameAgent:
             self.load(conf.checkpoint)
 
         self.net = self.net.to(device=self.device)
+
+        self.conf = conf
 
     def act(self, state, play=False):
         if play:
@@ -231,4 +237,6 @@ class GameAgent:
 
     def switch_imitation(self):
         self.imitation_flag = False
+        self.exploration_rate_decay = self.conf.exploration_rate_decay
+        self.exploration_rate = max(self.conf.exploration_rate ** self.curr_step, self.exploration_rate_min)
         self.memory.clear()
