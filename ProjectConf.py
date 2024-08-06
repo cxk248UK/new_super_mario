@@ -31,6 +31,12 @@ class DefaultProjectConf:
         # save conf
         self.checkpoint = None
 
-        #train conf
+        # train conf
         self.max_episodes = 40000
         self.start_episode = 0
+
+        # continue learning
+        self.start_from_previous_result = False
+        self.start_from_previous_result_log = None
+        self.start_from_previous_result_save_dir = None
+        self.start_from_previous_result_save_model = None

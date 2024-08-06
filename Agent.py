@@ -66,8 +66,8 @@ class GameAgent:
         self.imitation_flag = conf.imitation
 
         # load model if possible
-        if conf.checkpoint:
-            self.load(conf.checkpoint)
+        if conf.start_from_previous_result:
+            self.load(conf.start_from_previous_result_save_model)
 
         self.net = self.net.to(device=self.device)
 
@@ -192,7 +192,7 @@ class GameAgent:
         if self.curr_step % self.save_every == 0:
             self.save()
 
-        if self.curr_step < self.min_experience_num:
+        if self.curr_step < self.min_experience_num and not self.conf.start_from_previous_result:
             return None, None
 
         if len(self.memory) < self.batch_size:
