@@ -20,8 +20,12 @@ def train(conf=DefaultProjectConf()):
         save_dir = Path(
             conf.save_dir) / f'{datetime.datetime.now().strftime("%Y-%m-%dT%H-%M-%S")}_{game_env.unwrapped.gamename}'
     else:
-        save_dir = Path(SAVE_DIR) / f'{datetime.datetime.now().strftime("%Y-%m-%dT%H-%M-%S")}_{game_env.unwrapped.gamename}'
-    save_dir.mkdir(parents=True)
+        save_dir = Path(
+            SAVE_DIR) / f'{datetime.datetime.now().strftime("%Y-%m-%dT%H-%M-%S")}_{game_env.unwrapped.gamename}'
+    if conf.start_from_previous_result:
+        save_dir = Path(conf.start_from_previous_result_save_dir)
+    if not save_dir.is_dir():
+        save_dir.mkdir(parents=True)
 
     mario = GameAgent(state_dim=(conf.skip_frame_num, conf.environment_shape, conf.environment_shape),
                       action_dim=game_env.action_space.n,
@@ -30,9 +34,8 @@ def train(conf=DefaultProjectConf()):
     logger = MetricLogger(save_dir)
 
     max_total_reward = 0
-    max_action_record = []
 
-    for e in range(conf.start_episode, conf.max_episodes+1):
+    for e in range(conf.start_episode, conf.max_episodes + 1):
 
         state = game_env.reset()[0]
 
