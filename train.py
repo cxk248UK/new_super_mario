@@ -105,3 +105,6 @@ def train(conf=DefaultProjectConf()):
             max_action_record = copy.deepcopy(action_record)
             max_record = dict(max_reward=max_total_reward, action_record=max_action_record)
             torch.save(max_record, f'{save_dir}/max_record')
+
+        if e == conf.max_episodes:
+            mario.save(Path(f'{save_dir}/last_checkpoint'))
