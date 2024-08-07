@@ -3,6 +3,7 @@ import math
 
 import torch
 from torch import nn, Tensor
+from custom_common_dict import USE_DEVICE
 
 
 class PositionalEncoding(nn.Module):
@@ -167,14 +168,13 @@ class MiniTransformerCnnModel(nn.Module):
     def forward(self, input_frame, model='online'):
         input_frame = input_frame.to(torch.float)
         input_frame = input_frame.unsqueeze(2)
+        transformer_input = torch.zeros((1, 4, 512)).to(device=USE_DEVICE)
         if model == 'online':
-            transformer_input = torch.zeros((1, 4, 512))
             for seq_pic in input_frame:
                 transformer_input = torch.cat((transformer_input, self.online_cnn(seq_pic).unsqueeze(0)), 0)
             transformer_input = transformer_input[1:]
             return self.online_transformer(transformer_input)
         elif model == 'target':
-            transformer_input = torch.zeros((1, 4, 512))
             for seq_pic in input_frame:
                 transformer_input = torch.cat((transformer_input, self.target_cnn(seq_pic).unsqueeze(0)), 0)
             transformer_input = transformer_input[1:]
