@@ -1,6 +1,6 @@
 {
   "desc": "compare to imitation only train 10000 episodes with the same decay like imitation for complexity cnn model",
-  "save_dir": "cnn_imitation_result/complexity",
+  "save_dir": "cnn_compare_result/complexity",
   "game_name": "SuperMarioBros-Nes",
   "environment_shape": 84,
   "skip_frame_num": 4,

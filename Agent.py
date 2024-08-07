@@ -183,7 +183,11 @@ class GameAgent:
         return loss.item()
 
     def sync_Q_target(self):
-        self.net.target.load_state_dict(self.net.online.state_dict())
+        if 'Transformer' in self.conf.net_name:
+            self.net.target_cnn.load_state_dict(self.net.online_cnn.state_dict())
+            self.net.target_transformer.load_state_dict(self.net.online_transformer.state_dict())
+        else:
+            self.net.target.load_state_dict(self.net.online.state_dict())
 
     def learn(self):
         if self.curr_step % self.sync_every == 0:
@@ -215,10 +219,13 @@ class GameAgent:
 
         return td_est.mean().item(), loss
 
-    def save(self):
-        save_path = (
-                self.save_dir / f"mario_net_{int(self.curr_step // self.save_every)}.chkpt"
-        )
+    def save(self, last_save_path=None):
+        if not last_save_path:
+            save_path = (
+                    self.save_dir / f"mario_net_{int(self.curr_step // self.save_every)}.chkpt"
+            )
+        else:
+            save_path = last_save_path
         torch.save(
             dict(model=self.net.state_dict(), exploration_rate=self.exploration_rate),
             save_path,

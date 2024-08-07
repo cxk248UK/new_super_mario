@@ -15,7 +15,9 @@ conf_dict = json.load(f)
 
 conf = DefaultProjectConf()
 
-conf.__dict__ = conf_dict
+for name in conf.__dict__.keys():
+    if conf_dict.get(name):
+        conf.__setattr__(name, conf_dict.get(name))
 
 print(conf.net_name)
 
