@@ -128,7 +128,7 @@ class GameAgent:
         next_state = torch.tensor(next_state)
         action = torch.tensor([action])
         if self.imitation_flag:
-            reward = torch.tensor([0.0])
+            reward = torch.tensor([reward * 0.5])
         else:
             reward = torch.tensor([reward])
         done = torch.tensor([done])
