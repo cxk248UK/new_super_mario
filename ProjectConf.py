@@ -26,7 +26,7 @@ class DefaultProjectConf:
         self.imitation = False
         self.imitation_episodes = 10000
         self.imitation_exploration_rate = 1.0
-        self.imitation_exploration_rate_decay = 0.999
+        self.imitation_exploration_rate_decay = 0.99999975
 
         # save conf
         self.checkpoint = None
