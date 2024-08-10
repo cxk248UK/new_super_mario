@@ -19,5 +19,5 @@
   "imitation_episodes": 10000,
   "net_name": "MiniComplexCnnLayerModel",
   "desc": "default configuration",
-  "save_dir": "train_result/CNN/32/default_imitation"
+  "save_dir": "train_result/CNN/32/complexity_imitation"
 }
