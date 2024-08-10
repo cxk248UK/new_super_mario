@@ -1,5 +1,6 @@
 import copy
 import datetime
+import shutil
 from pathlib import Path
 
 import torch
@@ -95,16 +96,16 @@ def train(conf=DefaultProjectConf()):
                 step=mario.curr_step
             )
 
-        if e % 1000 == 0 or e == conf.max_episodes - 1:
-            with open(f'{save_dir}/conf.json', 'w') as json_file:
-                json.dump(conf.__dict__, json_file)
-                json_file.close()
-
         if total_reward > max_total_reward:
             max_total_reward = total_reward
             max_action_record = copy.deepcopy(action_record)
             max_record = dict(max_reward=max_total_reward, action_record=max_action_record)
             torch.save(max_record, f'{save_dir}/max_record')
 
-        if e == conf.max_episodes:
+        if e % 10000 == 0 or e == conf.max_episodes:
+            with open(f'{save_dir}/conf.json', 'w') as json_file:
+                json.dump(conf.__dict__, json_file)
+                json_file.close()
+            mario.memory.dumps(f'{save_dir}/agent_last_memory')
+            shutil.make_archive(f'{save_dir}/memory', 'zip', f'{save_dir}/agent_last_memory')
             mario.save(Path(f'{save_dir}/last_checkpoint'))

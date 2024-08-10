@@ -48,7 +48,7 @@ class GameAgent:
         self.save_every = conf.save_every
 
         #     cache and recall setting
-        self.memory = deque(maxlen=5000)
+        self.memory = TensorDictReplayBuffer(storage=LazyMemmapStorage(100000, device=torch.device("cpu")))
         self.batch_size = conf.batch_size
 
         #     learn rate for Q_learning
@@ -128,35 +128,28 @@ class GameAgent:
         next_state = torch.tensor(next_state)
         action = torch.tensor([action])
         if self.imitation_flag:
-            reward = torch.tensor([reward * 0.5])
+            reward = torch.tensor([reward * 0.1])
         else:
             reward = torch.tensor([reward])
         done = torch.tensor([done])
 
         # self.memory.append((state, next_state, action, reward, done,))
-        self.memory.append((state, next_state, action, reward, done,))
+        self.memory.add(
+            TensorDict({"state": state, "next_state": next_state, "action": action, "reward": reward, "done": done}))
 
     def recall(self):
         """
         Retrieve a batch of experiences from memory
         """
-        # soft q imitation learning recall
-        if self.imitation_flag:
-            exploration_batch = random.sample(self.memory, int(self.batch_size / 2))
-            expert_batch = random.sample(EXPERT_DATA_MEMORY, self.batch_size - int(self.batch_size / 2))
-            batch = exploration_batch + expert_batch
-        # classical soft q learning recall
+        if self.imitation_flag == 1:
+            batch = self.memory.sample(int(self.batch_size / 2)).to(self.device)
+            expert_batch = EXPERT_DATA_MEMORY.sample(int(self.batch_size / 2)).to(self.device)
+            state, next_state, action, reward, done = (torch.cat((batch.get(key), expert_batch.get(key)), 0) for key in
+                                                       ("state", "next_state", "action", "reward", "done"))
         else:
-            batch = random.sample(self.memory, self.batch_size)
-
-        state, next_state, action, reward, done = map(torch.stack, zip(*batch))
-
-        state = state.to(device=self.device)
-        next_state = next_state.to(device=self.device)
-        action = action.to(device=self.device)
-        reward = reward.to(device=self.device)
-        done = done.to(device=self.device)
-
+            batch = self.memory.sample(self.batch_size).to(self.device)
+            state, next_state, action, reward, done = (batch.get(key) for key in
+                                                       ("state", "next_state", "action", "reward", "done"))
         return state, next_state, action.squeeze(), reward.squeeze(), done.squeeze()
 
     def td_estimate(self, state, action):
@@ -246,4 +239,4 @@ class GameAgent:
         self.imitation_flag = False
         self.exploration_rate_decay = self.conf.exploration_rate_decay
         self.exploration_rate = max(self.conf.exploration_rate ** self.curr_step, self.exploration_rate_min)
-        self.memory.clear()
+        self.memory.empty()

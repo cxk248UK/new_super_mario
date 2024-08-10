@@ -3,6 +3,7 @@ from collections import deque
 import torch
 import json
 from torchrl.data import TensorDictReplayBuffer, LazyMemmapStorage
+import shutil
 
 USE_CUDA = torch.cuda.is_available()
 
@@ -58,13 +59,20 @@ MAX_EXPLORATION_EPISODES = 40000
 EXPLORATION_RATE_DECAY = 0.99999975
 MIN_EXPLORATION_RATE = 0.1
 
-EXPERT_DATA = []
+# EXPERT_DATA = []
+#
+# GENERATE_EXPERT_DATA = []
 
-for i in range(1, 6):
-    EXPERT_DATA.extend(torch.load(f'expert_data_{i}'))
+EXPERT_DATA_MEMORY = TensorDictReplayBuffer(storage=LazyMemmapStorage(100000, device=torch.device("cpu")))
 
-EXPERT_DATA_MEMORY = deque(maxlen=100000)
+# for i in range(1, 6):
+#     EXPERT_DATA = torch.load(f'expert_data_{i}')
+#     for expert_data in EXPERT_DATA:
+#         EXPERT_DATA_MEMORY.add(expert_data)
+#
+# for i in range(1, 11):
+#     EXPERT_DATA = torch.load(f'generate_expert_data_{i}')
+#     for expert_data in EXPERT_DATA:
+#         EXPERT_DATA_MEMORY.add(expert_data)
 
-for expert_data in EXPERT_DATA:
-    EXPERT_DATA_MEMORY.append((expert_data.get('state'), expert_data.get('next_state'), expert_data.get('action'),
-                               expert_data.get('reward'), expert_data.get('done')))
+
