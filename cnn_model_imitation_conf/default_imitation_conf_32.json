@@ -14,8 +14,9 @@
   "learn_every": 3,
   "sync_every": 10000.0,
   "checkpoint": null,
-  "max_episodes": 40000,
+  "max_episodes": 60000,
   "start_episode": 1,
+  "imitation_episodes": 1000,
   "net_name": "MiniCnnModel",
   "desc": "default configuration",
   "save_dir": "train_result/CNN/32/default_imitation"
