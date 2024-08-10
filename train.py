@@ -106,7 +106,7 @@ def train(conf=DefaultProjectConf()):
             with open(f'{save_dir}/conf.json', 'w') as json_file:
                 json.dump(conf.__dict__, json_file)
                 json_file.close()
-            mario.memory.dumps(f'{save_dir}/memory')
-            shutil.make_archive(f'{save_dir}/memory', 'zip', f'{save_dir}/agent_last_memory')
-            shutil.rmtree(f'{save_dir}/memory')
+            # mario.memory.dumps(f'{save_dir}/memory')
+            # shutil.make_archive(f'{save_dir}/memory', 'zip', f'{save_dir}/agent_last_memory')
+            # shutil.rmtree(f'{save_dir}/memory')
             mario.save(Path(f'{save_dir}/last_checkpoint'))

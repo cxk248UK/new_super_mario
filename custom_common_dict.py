@@ -64,12 +64,11 @@ MIN_EXPLORATION_RATE = 0.1
 # GENERATE_EXPERT_DATA = []
 
 EXPERT_DATA_MEMORY = TensorDictReplayBuffer(storage=LazyMemmapStorage(100000, device=torch.device("cpu")))
-EXPERT_DATA_MEMORY.loads('EXPERT_DATA_MEMORY')
 
-# for i in range(1, 6):
-#     EXPERT_DATA = torch.load(f'expert_data_{i}')
-#     for expert_data in EXPERT_DATA:
-#         EXPERT_DATA_MEMORY.add(expert_data)
+for i in range(1, 6):
+    EXPERT_DATA = torch.load(f'expert_data_{i}')
+    for expert_data in EXPERT_DATA:
+        EXPERT_DATA_MEMORY.add(expert_data)
 #
 # for i in range(1, 11):
 #     EXPERT_DATA = torch.load(f'generate_expert_data_{i}')
