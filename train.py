@@ -102,7 +102,7 @@ def train(conf=DefaultProjectConf()):
             max_record = dict(max_reward=max_total_reward, action_record=max_action_record)
             torch.save(max_record, f'{save_dir}/max_record')
 
-        if e % 10000 == 0 or e == conf.max_episodes:
+        if e % 1000 == 0 or e == conf.max_episodes:
             with open(f'{save_dir}/conf.json', 'w') as json_file:
                 json.dump(conf.__dict__, json_file)
                 json_file.close()
