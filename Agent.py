@@ -36,12 +36,8 @@ class GameAgent:
 
         self.net = net_class(input_dim=self.state_dim, output_dim=self.action_dim)
 
-        if conf.imitation:
-            self.exploration_rate = conf.imitation_exploration_rate
-            self.exploration_rate_decay = conf.imitation_exploration_rate_decay
-        else:
-            self.exploration_rate = conf.exploration_rate
-            self.exploration_rate_decay = conf.exploration_rate_decay
+        self.exploration_rate = conf.exploration_rate
+        self.exploration_rate_decay = conf.exploration_rate_decay
         self.exploration_rate_min = conf.exploration_rate_min
         self.curr_step = 0
 
