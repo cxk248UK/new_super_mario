@@ -16,7 +16,7 @@
   "checkpoint": null,
   "max_episodes": 60000,
   "start_episode": 1,
-  "imitation_episodes": 1000,
+  "imitation_episodes": 10000,
   "net_name": "MiniCnnModel",
   "desc": "default configuration",
   "save_dir": "train_result/CNN/32/default_imitation"
