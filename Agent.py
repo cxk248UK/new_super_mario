@@ -62,8 +62,8 @@ class GameAgent:
         self.imitation_flag = conf.imitation
 
         # load model if possible
-        if conf.start_from_previous_result:
-            self.load(conf.start_from_previous_result_save_model)
+        if conf.checkpoint:
+            self.load(conf.checkpoint)
 
         self.net = self.net.to(device=self.device)
 
@@ -233,6 +233,4 @@ class GameAgent:
 
     def switch_imitation(self):
         self.imitation_flag = False
-        self.exploration_rate_decay = self.conf.exploration_rate_decay
-        self.exploration_rate = max(self.conf.exploration_rate ** self.curr_step, self.exploration_rate_min)
         self.memory.empty()
