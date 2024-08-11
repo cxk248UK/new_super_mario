@@ -3,7 +3,7 @@
   "environment_shape": 84,
   "skip_frame_num": 4,
   "render": false,
-  "imitation": true,
+  "imitation": false,
   "exploration_rate": 1.0,
   "exploration_rate_decay": 0.99999975,
   "exploration_rate_min": 0.1,

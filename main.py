@@ -21,4 +21,6 @@ for name in conf.__dict__.keys():
 
 print(conf.net_name)
 
+print(f'imitation: {conf.imitation}')
+
 train.train(conf)
