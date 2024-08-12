@@ -45,7 +45,7 @@ class GameAgent:
 
         #     cache and recall setting
         if conf.is_colab:
-            self.memory = TensorDictReplayBuffer(storage=LazyTensorStorage(20000, device=torch.device("cpu")))
+            self.memory = TensorDictReplayBuffer(storage=LazyTensorStorage(100000, device=torch.device("cpu")))
         else:
             self.memory = TensorDictReplayBuffer(storage=LazyMemmapStorage(100000, device=torch.device("cpu")))
         self.batch_size = conf.batch_size
