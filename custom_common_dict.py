@@ -3,7 +3,7 @@ from collections import deque
 
 import torch
 import json
-from torchrl.data import TensorDictReplayBuffer, LazyMemmapStorage
+from torchrl.data import TensorDictReplayBuffer, LazyMemmapStorage, LazyTensorStorage
 import shutil
 
 USE_CUDA = torch.cuda.is_available()
@@ -64,7 +64,7 @@ MIN_EXPLORATION_RATE = 0.1
 #
 # GENERATE_EXPERT_DATA = []
 
-EXPERT_DATA_MEMORY = TensorDictReplayBuffer(storage=LazyMemmapStorage(100000, device=torch.device("cpu")))
+EXPERT_DATA_MEMORY = TensorDictReplayBuffer(storage=LazyTensorStorage(2600, device=torch.device("cpu")))
 
 expert_data_prefix = ''
 
@@ -80,5 +80,3 @@ for i in range(1, 6):
 #     EXPERT_DATA = torch.load(f'generate_expert_data_{i}')
 #     for expert_data in EXPERT_DATA:
 #         EXPERT_DATA_MEMORY.add(expert_data)
-
-
