@@ -4,7 +4,7 @@ import numpy as np
 import torch
 from torch import nn
 from tensordict import TensorDict
-from torchrl.data import TensorDictReplayBuffer, LazyMemmapStorage
+from torchrl.data import TensorDictReplayBuffer, LazyMemmapStorage, LazyTensorStorage
 
 import CNN
 from ProjectConf import DefaultProjectConf
@@ -44,7 +44,10 @@ class GameAgent:
         self.save_every = conf.save_every
 
         #     cache and recall setting
-        self.memory = TensorDictReplayBuffer(storage=LazyMemmapStorage(100000, device=torch.device("cpu")))
+        if conf.is_colab:
+            self.memory = TensorDictReplayBuffer(storage=LazyTensorStorage(40000, device=torch.device("cpu")))
+        else:
+            self.memory = TensorDictReplayBuffer(storage=LazyMemmapStorage(100000, device=torch.device("cpu")))
         self.batch_size = conf.batch_size
 
         #     learn rate for Q_learning

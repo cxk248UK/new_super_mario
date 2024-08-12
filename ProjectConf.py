@@ -41,3 +41,5 @@ class DefaultProjectConf:
         self.start_from_previous_result_log = None
         self.start_from_previous_result_save_dir = None
         self.start_from_previous_result_save_model = None
+
+        self.is_colab = False
