@@ -148,9 +148,7 @@ class MiniTransformerCnnModel(nn.Module):
             nn.TransformerEncoder(
                 nn.TransformerEncoderLayer(d_model=512, dim_feedforward=1024, nhead=2, batch_first=True), 1),
             nn.Flatten(-2, -1),
-            nn.Linear(in_features=2048, out_features=1024),
-            nn.ReLU(),
-            nn.Linear(in_features=1024, out_features=512),
+            nn.Linear(in_features=2048, out_features=512),
             nn.ReLU(),
             nn.Linear(in_features=512, out_features=output_dim)
         )
