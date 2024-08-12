@@ -146,7 +146,7 @@ class MiniTransformerCnnModel(nn.Module):
         self.online_transformer = nn.Sequential(
             PositionalEncoding(512),
             nn.TransformerEncoder(
-                nn.TransformerEncoderLayer(d_model=512, dim_feedforward=1024, nhead=2, batch_first=True), 1),
+                nn.TransformerEncoderLayer(d_model=512, dim_feedforward=512, nhead=2, batch_first=True), 1),
             nn.Flatten(-2, -1),
             nn.Linear(in_features=2048, out_features=512),
             nn.ReLU(),
