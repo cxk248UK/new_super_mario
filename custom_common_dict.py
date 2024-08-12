@@ -1,3 +1,4 @@
+import os.path
 from collections import deque
 
 import torch
@@ -65,8 +66,13 @@ MIN_EXPLORATION_RATE = 0.1
 
 EXPERT_DATA_MEMORY = TensorDictReplayBuffer(storage=LazyMemmapStorage(100000, device=torch.device("cpu")))
 
+expert_data_prefix = ''
+
+if os.path.exists('../drive/MyDrive/new_super_mario/'):
+    expert_data_prefix = '../drive/MyDrive/new_super_mario/'
+
 for i in range(1, 6):
-    EXPERT_DATA = torch.load(f'expert_data_{i}')
+    EXPERT_DATA = torch.load(f'{expert_data_prefix}expert_data_{i}')
     for expert_data in EXPERT_DATA:
         EXPERT_DATA_MEMORY.add(expert_data)
 #

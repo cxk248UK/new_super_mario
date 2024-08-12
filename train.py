@@ -110,3 +110,4 @@ def train(conf=DefaultProjectConf()):
             # shutil.make_archive(f'{save_dir}/memory', 'zip', f'{save_dir}/agent_last_memory')
             # shutil.rmtree(f'{save_dir}/memory')
             mario.save(Path(f'{save_dir}/last_checkpoint'))
+            torch.save(mario.memory.sample(1000),f'{save_dir}/last_memory_1000')
