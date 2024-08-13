@@ -133,20 +133,114 @@ class MiniTransformerCnnModel(nn.Module):
         c, h, w = input_dim
 
         self.online_cnn = nn.Sequential(
-            nn.Conv2d(in_channels=1, out_channels=32, kernel_size=8, stride=4),
-            nn.ReLU(),
-            nn.Conv2d(in_channels=32, out_channels=64, kernel_size=4, stride=2),
-            nn.ReLU(),
-            nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, stride=1),
+            nn.Conv2d(in_channels=1, out_channels=3, kernel_size=8, stride=4),
             nn.ReLU(),
             nn.Flatten(-3, -1),
-            nn.Linear(3136, 512)
+            nn.Linear(1200, 512)
         )
 
         self.online_transformer = nn.Sequential(
             PositionalEncoding(512),
             nn.TransformerEncoder(
                 nn.TransformerEncoderLayer(d_model=512, dim_feedforward=512, nhead=2, batch_first=True), 1),
+            nn.Flatten(-2, -1),
+            nn.Linear(in_features=2048, out_features=512),
+            nn.ReLU(),
+            nn.Linear(in_features=512, out_features=output_dim)
+        )
+
+        self.target_cnn = copy.deepcopy(self.online_cnn)
+
+        self.target_transformer = copy.deepcopy(self.online_transformer)
+
+        for p in self.target_cnn.parameters():
+            p.requires_grad = False
+
+        for p in self.target_transformer.parameters():
+            p.requires_grad = False
+
+    def forward(self, input_frame, model='online'):
+        input_frame = input_frame.to(torch.float)
+        input_frame = input_frame.unsqueeze(2)
+        transformer_input = torch.zeros((1, 4, 512)).to(device=USE_DEVICE)
+        if model == 'online':
+            for seq_pic in input_frame:
+                transformer_input = torch.cat((transformer_input, self.online_cnn(seq_pic).unsqueeze(0)), 0)
+            transformer_input = transformer_input[1:]
+            return self.online_transformer(transformer_input)
+        elif model == 'target':
+            for seq_pic in input_frame:
+                transformer_input = torch.cat((transformer_input, self.target_cnn(seq_pic).unsqueeze(0)), 0)
+            transformer_input = transformer_input[1:]
+            return self.target_transformer(transformer_input)
+
+
+class MiniSimplifyTransformerCnnModel(nn.Module):
+
+    def __init__(self, input_dim, output_dim):
+        super().__init__()
+        c, h, w = input_dim
+
+        self.online_cnn = nn.Sequential(
+            nn.Conv2d(in_channels=1, out_channels=3, kernel_size=8, stride=4),
+            nn.ReLU(),
+            nn.Flatten(-3, -1),
+            nn.Linear(1200, 512)
+        )
+
+        self.online_transformer = nn.Sequential(
+            PositionalEncoding(512),
+            nn.TransformerEncoder(
+                nn.TransformerEncoderLayer(d_model=512, dim_feedforward=512, nhead=1, batch_first=True), 1),
+            nn.Flatten(-2, -1),
+            nn.Linear(in_features=2048, out_features=512),
+            nn.ReLU(),
+            nn.Linear(in_features=512, out_features=output_dim)
+        )
+
+        self.target_cnn = copy.deepcopy(self.online_cnn)
+
+        self.target_transformer = copy.deepcopy(self.online_transformer)
+
+        for p in self.target_cnn.parameters():
+            p.requires_grad = False
+
+        for p in self.target_transformer.parameters():
+            p.requires_grad = False
+
+    def forward(self, input_frame, model='online'):
+        input_frame = input_frame.to(torch.float)
+        input_frame = input_frame.unsqueeze(2)
+        transformer_input = torch.zeros((1, 4, 512)).to(device=USE_DEVICE)
+        if model == 'online':
+            for seq_pic in input_frame:
+                transformer_input = torch.cat((transformer_input, self.online_cnn(seq_pic).unsqueeze(0)), 0)
+            transformer_input = transformer_input[1:]
+            return self.online_transformer(transformer_input)
+        elif model == 'target':
+            for seq_pic in input_frame:
+                transformer_input = torch.cat((transformer_input, self.target_cnn(seq_pic).unsqueeze(0)), 0)
+            transformer_input = transformer_input[1:]
+            return self.target_transformer(transformer_input)
+
+
+class MiniComplexityTransformerCnnModel(nn.Module):
+
+    def __init__(self, input_dim, output_dim):
+        super().__init__()
+        c, h, w = input_dim
+
+        self.online_cnn = nn.Sequential(
+            nn.Conv2d(in_channels=1, out_channels=3, kernel_size=8, stride=4),
+            nn.ReLU(),
+            nn.Flatten(-3, -1),
+            nn.Linear(1200, 512)
+        )
+
+        self.online_transformer = nn.Sequential(
+            PositionalEncoding(512),
+            nn.TransformerEncoder(
+                nn.TransformerEncoderLayer(d_model=512, dim_feedforward=512, nhead=4, batch_first=True), 1),
             nn.Flatten(-2, -1),
             nn.Linear(in_features=2048, out_features=512),
             nn.ReLU(),
