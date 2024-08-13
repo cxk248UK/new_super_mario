@@ -21,6 +21,5 @@
   "imitation_exploration_rate_decay": 0.99999975,
   "checkpoint": null,
   "max_episodes": 60000,
-  "start_episode": 1,
-  "is_colab": true
+  "start_episode": 1
 }
