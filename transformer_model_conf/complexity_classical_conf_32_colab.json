@@ -1,6 +1,6 @@
 {
   "desc": "default transformer model train 60000 episodes",
-  "save_dir": "../drive/MyDrive/new_super_mario/transformer_model_result/imitation/complexity",
+  "save_dir": "../drive/MyDrive/new_super_mario/transformer_model_result/classical/complexity",
   "game_name": "SuperMarioBros-Nes",
   "environment_shape": 84,
   "skip_frame_num": 4,
@@ -15,7 +15,7 @@
   "min_experience_num": 10000.0,
   "learn_every": 3,
   "sync_every": 10000.0,
-  "imitation": true,
+  "imitation": false,
   "imitation_episodes": 10000,
   "imitation_exploration_rate": 1.0,
   "imitation_exploration_rate_decay": 0.99999975,
