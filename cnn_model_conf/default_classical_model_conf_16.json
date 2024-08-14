@@ -1,6 +1,6 @@
 {
   "desc": "default transformer model train 60000 episodes",
-  "save_dir": "./transformer_model_result/imitation/default",
+  "save_dir": "/content/drive/MyDrive/cnn_model_result/classical/default_16",
   "game_name": "SuperMarioBros-Nes",
   "environment_shape": 84,
   "skip_frame_num": 4,
