@@ -10,7 +10,7 @@
   "exploration_rate_decay": 0.99999975,
   "exploration_rate_min": 0.1,
   "save_every": 500000.0,
-  "batch_size": 32,
+  "batch_size": 16,
   "gamma": 0.9,
   "min_experience_num": 10000.0,
   "learn_every": 3,
