@@ -22,6 +22,7 @@ class DefaultProjectConf:
         self.learn_every = 3
         self.sync_every = 1e4
         self.save_memory_to_memory = False
+        self.save_memory_1000 = False
 
         # imitation conf
         self.imitation = False
