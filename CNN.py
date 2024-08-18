@@ -133,22 +133,17 @@ class MiniTransformerCnnModel(nn.Module):
         c, h, w = input_dim
 
         self.online_cnn = nn.Sequential(
-            nn.Conv2d(in_channels=1, out_channels=32, kernel_size=8, stride=4),
-            nn.ReLU(),
-            nn.Conv2d(in_channels=32, out_channels=64, kernel_size=4, stride=2),
-            nn.ReLU(),
-            nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, stride=1),
-            nn.ReLU(),
-            nn.Flatten(-3, -1),
-            nn.Linear(3136, 512)
+            nn.Conv2d(in_channels=4, out_channels=4 * 6 * 6, kernel_size=6, stride=6),
+            nn.Flatten(-2, -1),
+            nn.LayerNorm(196)
         )
 
         self.online_transformer = nn.Sequential(
-            PositionalEncoding(512),
+            PositionalEncoding(196),
             nn.TransformerEncoder(
-                nn.TransformerEncoderLayer(d_model=512, dim_feedforward=512, nhead=2, batch_first=True), 1),
+                nn.TransformerEncoderLayer(d_model=196, dim_feedforward=512, nhead=2, batch_first=True), 1),
             nn.Flatten(-2, -1),
-            nn.Linear(in_features=2048, out_features=512),
+            nn.Linear(in_features=144 * 196, out_features=512),
             nn.ReLU(),
             nn.Linear(in_features=512, out_features=output_dim)
         )
