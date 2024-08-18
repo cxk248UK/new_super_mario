@@ -160,18 +160,12 @@ class MiniTransformerCnnModel(nn.Module):
 
     def forward(self, input_frame, model='online'):
         input_frame = input_frame.to(torch.float)
-        input_frame = input_frame.unsqueeze(2)
-        transformer_input = torch.zeros((1, 4, 512)).to(device=USE_DEVICE)
         if model == 'online':
-            for seq_pic in input_frame:
-                transformer_input = torch.cat((transformer_input, self.online_cnn(seq_pic).unsqueeze(0)), 0)
-            transformer_input = transformer_input[1:]
-            return self.online_transformer(transformer_input)
+            x = self.online_cnn(input_frame)
+            return self.online_transformer(x)
         elif model == 'target':
-            for seq_pic in input_frame:
-                transformer_input = torch.cat((transformer_input, self.target_cnn(seq_pic).unsqueeze(0)), 0)
-            transformer_input = transformer_input[1:]
-            return self.target_transformer(transformer_input)
+            x = self.target_cnn(input_frame)
+            return self.target_transformer(x)
 
 
 class MiniSimplifyTransformerCnnModel(nn.Module):
