@@ -175,18 +175,17 @@ class MiniSimplifyTransformerCnnModel(nn.Module):
         c, h, w = input_dim
 
         self.online_cnn = nn.Sequential(
-            nn.Conv2d(in_channels=1, out_channels=3, kernel_size=8, stride=4),
-            nn.ReLU(),
-            nn.Flatten(-3, -1),
-            nn.Linear(1200, 512)
+            nn.Conv2d(in_channels=4, out_channels=4 * 6 * 6, kernel_size=6, stride=6),
+            nn.Flatten(-2, -1),
+            nn.LayerNorm(196)
         )
 
         self.online_transformer = nn.Sequential(
-            PositionalEncoding(512),
+            PositionalEncoding(196, max_len=144),
             nn.TransformerEncoder(
-                nn.TransformerEncoderLayer(d_model=512, dim_feedforward=512, nhead=1, batch_first=True), 1),
+                nn.TransformerEncoderLayer(d_model=196, dim_feedforward=512, nhead=1, batch_first=True), 1),
             nn.Flatten(-2, -1),
-            nn.Linear(in_features=2048, out_features=512),
+            nn.LazyLinear(out_features=512),
             nn.ReLU(),
             nn.Linear(in_features=512, out_features=output_dim)
         )
@@ -203,18 +202,12 @@ class MiniSimplifyTransformerCnnModel(nn.Module):
 
     def forward(self, input_frame, model='online'):
         input_frame = input_frame.to(torch.float)
-        input_frame = input_frame.unsqueeze(2)
-        transformer_input = torch.zeros((1, 4, 512)).to(device=USE_DEVICE)
         if model == 'online':
-            for seq_pic in input_frame:
-                transformer_input = torch.cat((transformer_input, self.online_cnn(seq_pic).unsqueeze(0)), 0)
-            transformer_input = transformer_input[1:]
-            return self.online_transformer(transformer_input)
+            x = self.online_cnn(input_frame)
+            return self.online_transformer(x)
         elif model == 'target':
-            for seq_pic in input_frame:
-                transformer_input = torch.cat((transformer_input, self.target_cnn(seq_pic).unsqueeze(0)), 0)
-            transformer_input = transformer_input[1:]
-            return self.target_transformer(transformer_input)
+            x = self.target_cnn(input_frame)
+            return self.target_transformer(x)
 
 
 class MiniComplexityTransformerCnnModel(nn.Module):
@@ -224,18 +217,17 @@ class MiniComplexityTransformerCnnModel(nn.Module):
         c, h, w = input_dim
 
         self.online_cnn = nn.Sequential(
-            nn.Conv2d(in_channels=1, out_channels=3, kernel_size=8, stride=4),
-            nn.ReLU(),
-            nn.Flatten(-3, -1),
-            nn.Linear(1200, 512)
+            nn.Conv2d(in_channels=4, out_channels=4 * 6 * 6, kernel_size=6, stride=6),
+            nn.Flatten(-2, -1),
+            nn.LayerNorm(196)
         )
 
         self.online_transformer = nn.Sequential(
-            PositionalEncoding(512),
+            PositionalEncoding(196, max_len=144),
             nn.TransformerEncoder(
-                nn.TransformerEncoderLayer(d_model=512, dim_feedforward=512, nhead=4, batch_first=True), 1),
+                nn.TransformerEncoderLayer(d_model=196, dim_feedforward=512, nhead=4, batch_first=True), 1),
             nn.Flatten(-2, -1),
-            nn.Linear(in_features=2048, out_features=512),
+            nn.LazyLinear(out_features=512),
             nn.ReLU(),
             nn.Linear(in_features=512, out_features=output_dim)
         )
@@ -252,15 +244,9 @@ class MiniComplexityTransformerCnnModel(nn.Module):
 
     def forward(self, input_frame, model='online'):
         input_frame = input_frame.to(torch.float)
-        input_frame = input_frame.unsqueeze(2)
-        transformer_input = torch.zeros((1, 4, 512)).to(device=USE_DEVICE)
         if model == 'online':
-            for seq_pic in input_frame:
-                transformer_input = torch.cat((transformer_input, self.online_cnn(seq_pic).unsqueeze(0)), 0)
-            transformer_input = transformer_input[1:]
-            return self.online_transformer(transformer_input)
+            x = self.online_cnn(input_frame)
+            return self.online_transformer(x)
         elif model == 'target':
-            for seq_pic in input_frame:
-                transformer_input = torch.cat((transformer_input, self.target_cnn(seq_pic).unsqueeze(0)), 0)
-            transformer_input = transformer_input[1:]
-            return self.target_transformer(transformer_input)
+            x = self.target_cnn(input_frame)
+            return self.target_transformer(x)
