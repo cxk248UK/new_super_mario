@@ -1,6 +1,6 @@
 {
   "desc": "default transformer model train 60000 episodes",
-  "save_dir": "./transformer_model_result/imitation/complexity",
+  "save_dir": "./transformer_model_result/classical/complexity",
   "game_name": "SuperMarioBros-Nes",
   "environment_shape": 84,
   "skip_frame_num": 4,
