@@ -1,20 +1,19 @@
+import json
+
 from environment import init_environment
-from custom_common_dict import TRAINED_MODEL_PATH, USE_CUDA, FRAME_SKIP, FRAME_WIDTH, FRAME_HIGH
-from agent import GameAgent
+from gymnasium.wrappers import RecordVideo
 
 
 def play():
     game_env = init_environment(render=True)
+    game_env = RecordVideo(game_env, video_folder='video_record')
 
     state = game_env.reset()[0]
 
-    mario = GameAgent(state_dim=(FRAME_SKIP, FRAME_WIDTH, FRAME_HIGH), action_dim=game_env.action_space.n,
-                      save_dir=None,
-                      checkpoint=TRAINED_MODEL_PATH)
+    action_record_action = json.load(open('max_reward_actions.json', 'r'))
 
-    while True:
+    for action in action_record_action:
         # Run agent on the state
-        action = mario.act(state, True)
 
         # Agent performs action
         observation, reward, terminated, truncated, info = game_env.step(action)
@@ -27,6 +26,8 @@ def play():
         # Check if end of game
         if terminated or truncated:
             break
+
+    game_env.close()
 
 
 if __name__ == '__main__':

@@ -67,7 +67,7 @@ def train(conf=DefaultProjectConf()):
 
             done = terminated or truncated or (lives < 2) or (last_time_count > 10)
 
-            # half episodes of imitation switch to classical soft q learning
+            # half episodes of imitation switch to classical_log soft q learning
             if mario.imitation_flag and (e == conf.imitation_episodes):
                 mario.switch_imitation()
 

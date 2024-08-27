@@ -1,3 +1,4 @@
 checkpoints/
 .idea/
 /trained_mario.chkpt
+/test.py

@@ -69,7 +69,7 @@ class SkipFrame(gym.Wrapper):
 
 def init_environment(render=False, conf=DefaultProjectConf()):
     if render:
-        game_env = retro.make(game=conf.game_name, render_mode=PLAY_RENDER)
+        game_env = retro.make(game=conf.game_name, render_mode='rgb_array')
     else:
         game_env = retro.make(game=conf.game_name, render_mode=TRAIN_RENDER)
 

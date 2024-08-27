@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 class MetricLogger():
     def __init__(self, save_dir):
-        self.save_log = save_dir / "log"
+        self.save_log = save_dir / "imitation_log"
         if not self.save_log.is_file():
             with open(self.save_log, "w") as f:
                 f.write(
